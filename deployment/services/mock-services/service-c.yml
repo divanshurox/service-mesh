@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-c
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-c
+  template:
+    metadata:
+      labels:
+        app: service-c
+    spec:
+      containers:
+        - name: service-c
+          image: service-c:1.0.0
+          ports:
+            - containerPort: 9200
+        - name: proxy-c
+          image: service-mesh-proxy:1.0.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: LOCAL_SERVICE_NAME
+              value: "service-c"
+            - name: LOCAL_SERVICE_PORT
+              value: "9200"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-c
+spec:
+  selector:
+    app: service-c
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
